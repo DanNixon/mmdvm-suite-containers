@@ -1,0 +1,44 @@
+---
+name: Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - app: dmrgateway
+            revision: 518c2a6
+            tags: latest
+          - app: mmdvmhost
+            revision: 2b34978
+            tags: latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build images
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ matrix.app }}
+          tags: ${{ matrix.tags }} ${{ matrix.revision }}
+          containerfiles: |
+            ./${{ matrix.app }}.Containerfile
+          oci: true
+
+      - name: Push images to GHCR
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: ghcr.io/dannixon
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
