@@ -1,0 +1,180 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mmdvm
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: mmdvm
+data:
+  dmrgateway.ini: |
+    [General]
+    Timeout=10
+    RptAddress=127.0.0.1
+    RptPort=62032
+    LocalAddress=127.0.0.1
+    LocalPort=62031
+    RuleTrace=0
+    Daemon=0
+    Debug=0
+
+    [Log]
+    DisplayLevel=1
+    FileLevel=0
+
+    [Voice]
+    Enabled=0
+
+    [Info]
+    Latitude=LAT
+    Longitude=LON
+    Location=LOC
+
+    [XLX Network]
+    Enabled=0
+
+    [DMR Network 1]
+    Enabled=1
+    Debug=0
+    Name=BrandMeister
+    Address=44.155.254.5
+    Port=62031
+    Local=62031
+    Jitter=100
+    Location=1
+    Id=REPEATER_DMR_ID
+    Password=PASS
+    PassAllTG=1
+    PassAllTG=2
+    PassAllPC=1
+    PassAllPC=2
+
+    [DMR Network 2]
+    Enabled=0
+
+    [DMR Network 3]
+    Enabled=0
+
+    [DMR Network 4]
+    Enabled=0
+
+    [DMR Network 5]
+    Enabled=0
+
+    [GPSD]
+    Enable=0
+
+    [APRS]
+    Enable=0
+
+    [Dynamic TG Control]
+    Enabled=0
+
+  mmdvmhost.ini: |
+    [General]
+    Callsign=CALL
+    Id=DMR_ID
+    Timeout=240
+    Duplex=1
+    RFModeHang=30
+    NetModeHang=30
+    Display=None
+    Daemon=0
+
+    [Info]
+    RXFrequency=434000000
+    TXFrequency=430800000
+
+    [Log]
+    DisplayLevel=2
+    FileLevel=0
+
+    [Modem]
+    UARTPort=/dev/ttyMMDVM
+    TXInvert=1
+    RXInvert=0
+    PTTInvert=0
+    TXDelay=100
+    RXOffset=-300
+    TXOffset=250
+    DMRDelay=0
+    RXLevel=50
+    TXLevel=50
+    RXDCOffset=0
+    TXDCOffset=0
+    RFLevel=100
+    DMRTXLevel=50
+    Trace=0
+    Debug=1
+
+    [DMR]
+    Enable=1
+    Beacons=0
+    BeaconInterval=60
+    BeaconDuration=3
+    ColorCode=1
+    SelfOnly=1
+    EmbeddedLCOnly=0
+    DumpTAData=1
+    CallHang=3
+    TXHang=4
+    ModeHang=20
+    OVCM=0
+
+    [DMR Network]
+    Enable=1
+    LocalAddress=127.0.0.1
+    LocalPort=62032
+    RemoteAddress=127.0.0.1
+    RemotePort=62031
+    Jitter=360
+    Slot1=1
+    Slot2=1
+    Debug=1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mmdvm
+  namespace: mmdvm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mmdvmhost
+  template:
+    metadata:
+      labels:
+        app: mmdvmhost
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: NODE
+      volumes:
+        - name: config
+          configMap:
+            name: config
+        - name: modem
+          hostPath:
+            path: SERIAL_DEVICE
+      containers:
+        - name: mmdvmhost
+          image: ghcr.io/dannixon/mmdvmhost:2b34978
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: modem
+              mountPath: /dev/ttyMMDVM
+        - name: dmrgateway
+          image: ghcr.io/dannixon/dmrgateway:518c2a6
+          volumeMounts:
+            - name: config
+              mountPath: /config

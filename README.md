@@ -26,4 +26,4 @@ A sensible deployment strategy would be:
 
 ## Example deployment
 
-TODO
+See [kubernetes](./kubernetes).
