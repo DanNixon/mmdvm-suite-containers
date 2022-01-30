@@ -13,7 +13,7 @@ RUN git clone \
   /tmp/src
 WORKDIR /tmp/src
 RUN git checkout $revision
-RUN make
+RUN make -j
 
 FROM docker.io/library/alpine:latest
 
