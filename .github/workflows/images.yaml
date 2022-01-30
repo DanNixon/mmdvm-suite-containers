@@ -24,12 +24,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
       - name: Build images
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ matrix.app }}
           tags: ${{ matrix.tags }} ${{ matrix.revision }}
+          archs: amd64, arm64
           containerfiles: |
             ./${{ matrix.app }}.Containerfile
           oci: true

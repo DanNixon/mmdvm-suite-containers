@@ -2,10 +2,12 @@
 
 OCI images for [G4KLX](https://github.com/g4klx)'s suite of MMDVM related applications.
 
-Currently only includes:
+Currently includes:
 
 - [MMDVMHost](https://github.com/g4klx/MMDVMHost)
 - [DMRGateway](https://github.com/g4klx/DMRGateway)
+
+Images are currently built for both `amd64` and `arm64`.
 
 ## Versioning
 
