@@ -14,6 +14,12 @@ jobs:
     strategy:
       matrix:
         include:
+          - app: aprsgateway
+            revision: 589bcba
+            tags: latest
+          - app: dapnetgateway
+            revision: 631297e
+            tags: latest
           - app: dmrgateway
             revision: 518c2a6
             tags: latest
@@ -34,10 +40,13 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ matrix.app }}
-          tags: ${{ matrix.tags }} ${{ matrix.revision }}
           archs: amd64, arm64
-          containerfiles: |
-            ./${{ matrix.app }}.Containerfile
+          build-args: |
+            repo_url=https://github.com/g4klx/${{ matrix.app }}.git
+            revision=${{ matrix.revision }}
+            app_name=${{ matrix.app }}
+          tags: ${{ matrix.tags }} ${{ matrix.revision }}
+          containerfiles: Containerfile
           oci: true
 
       - name: Push images to GHCR

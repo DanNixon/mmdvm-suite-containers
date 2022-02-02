@@ -8,10 +8,10 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config
+  name: dmrgateway-config
   namespace: mmdvm
 data:
-  dmrgateway.ini: |
+  config.ini: |
     [General]
     Timeout=10
     RptAddress=127.0.0.1
@@ -74,7 +74,14 @@ data:
     [Dynamic TG Control]
     Enabled=0
 
-  mmdvmhost.ini: |
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mmdvmhost-config
+  namespace: mmdvm
+data:
+  config.ini: |
     [General]
     Callsign=CALL
     Id=DMR_ID
@@ -157,9 +164,12 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: NODE
       volumes:
-        - name: config
+        - name: dmrgateway-config
           configMap:
-            name: config
+            name: dmrgateway-config
+        - name: mmdvmhost-config
+          configMap:
+            name: mmdvmhost-config
         - name: modem
           hostPath:
             path: SERIAL_DEVICE
@@ -169,12 +179,12 @@ spec:
           securityContext:
             privileged: true
           volumeMounts:
-            - name: config
+            - name: mmdvmhost-config
               mountPath: /config
             - name: modem
               mountPath: /dev/ttyMMDVM
         - name: dmrgateway
           image: ghcr.io/dannixon/dmrgateway:518c2a6
           volumeMounts:
-            - name: config
+            - name: dmrgateway-config
               mountPath: /config
