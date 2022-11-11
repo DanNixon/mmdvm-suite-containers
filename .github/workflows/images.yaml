@@ -21,10 +21,10 @@ jobs:
             revision: 631297e
             tags: latest
           - app: dmrgateway
-            revision: 518c2a6
+            revision: 71b42aa
             tags: latest
           - app: mmdvmhost
-            revision: 2b34978
+            revision: '3314310'
             tags: latest
 
     steps:
