@@ -2,6 +2,7 @@
 name: Images
 
 on:
+  pull_request:
   push:
     branches:
       - main
@@ -50,6 +51,7 @@ jobs:
           oci: true
 
       - name: Push images to GHCR
+        if: github.ref == 'refs/heads/main'
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-image.outputs.image }}
