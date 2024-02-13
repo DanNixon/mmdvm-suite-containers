@@ -15,16 +15,16 @@ jobs:
       matrix:
         include:
           - app: aprsgateway
-            revision: 589bcba
+            revision: '7fd8ad3'
             tags: latest
           - app: dapnetgateway
-            revision: 631297e
+            revision: '41ba7fb'
             tags: latest
           - app: dmrgateway
-            revision: 71b42aa
+            revision: '2b81fe2'
             tags: latest
           - app: mmdvmhost
-            revision: '3314310'
+            revision: '218a017'
             tags: latest
 
     steps:
