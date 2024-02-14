@@ -9,24 +9,11 @@ Currently includes:
 - [DMRGateway](https://github.com/g4klx/DMRGateway)
 - [MMDVMHost](https://github.com/g4klx/MMDVMHost)
 
-Images are currently built for both `amd64` and `arm64`.
-
 ## Versioning
 
 Unfortunately, the upstream projects are not versioned or released in any sane manner.
-As a result the following is the best I can really come up with for providing vaguely useful image tagging.
-
-- `latest`: the most recent revision to have been built, not necessarily the head of `master` at the time of building.
-- `GIT SHORT SHA`: the application as of the specified Git short SHA.
-
-A sensible deployment strategy would be:
-
-- use the `latest` tag for your initial deployment
-- verify things work as expected
-- pin to the corresponding `GIT SHORT SHA` tag
-- move to the `latest` tag when you wish to upgrade
-- verify things work as expected
-- pin to the corresponding `GIT SHORT SHA` tag
+The images are therefore tagged with the version of the Nix package for the corresponding tool (see [here](https://nur.nix-community.org/repos/dannixon/)).
+These packages are versioned based on the date of the commit used to build them.
 
 ## Example deployment
 

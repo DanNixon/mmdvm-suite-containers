@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   build:
@@ -13,47 +14,30 @@ jobs:
 
     strategy:
       matrix:
-        include:
-          - app: aprsgateway
-            revision: '7fd8ad3'
-            tags: latest
-          - app: dapnetgateway
-            revision: '41ba7fb'
-            tags: latest
-          - app: dmrgateway
-            revision: '2b81fe2'
-            tags: latest
-          - app: mmdvmhost
-            revision: '218a017'
-            tags: latest
+        image:
+          - aprsgateway
+          - dapnetgateway
+          - dmrgateway
+          - mmdvmhost
 
     steps:
       - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v9
 
-      - name: Install qemu dependency
+      - name: Build
+        run: nix build .#${{ matrix.image }} --no-link
+
+      - name: Build and push container image
+        if: ${{ github.ref_name == 'main' }}
         run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-user-static
+          set -x
 
-      - name: Build images
-        id: build-image
-        uses: redhat-actions/buildah-build@v2
-        with:
-          image: ${{ matrix.app }}
-          archs: amd64, arm64
-          build-args: |
-            repo_url=https://github.com/g4klx/${{ matrix.app }}.git
-            revision=${{ matrix.revision }}
-            app_name=${{ matrix.app }}
-          tags: ${{ matrix.tags }} ${{ matrix.revision }}
-          containerfiles: Containerfile
-          oci: true
+          # Build image via Nix and take the resulting path as the local container registry
+          local_cr="docker-archive://$(nix build .#${{ matrix.image }} --no-link --print-out-paths)"
 
-      - name: Push images to GHCR
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: ${{ steps.build-image.outputs.image }}
-          tags: ${{ steps.build-image.outputs.tags }}
-          registry: ghcr.io/dannixon
-          username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
+          # The container registry to push images to (GHCR)
+          remote_cr="docker://ghcr.io/dannixon/${{ matrix.image }}"
+          remote_cr_creds="${{ github.repository_owner }}:${{ github.token }}"
+
+          skopeo copy --dest-creds="$remote_cr_creds" "$local_cr" "$remote_cr"
+          skopeo copy --dest-creds="$remote_cr_creds" "$local_cr" "$remote_cr:latest"
