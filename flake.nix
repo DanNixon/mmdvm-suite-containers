@@ -32,7 +32,8 @@
             alejandra
             mdl
 
-            # Container image management tool
+            # Container image management and support tools
+            jq
             skopeo
           ];
         };

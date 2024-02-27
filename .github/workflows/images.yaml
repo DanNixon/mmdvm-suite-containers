@@ -30,14 +30,20 @@ jobs:
       - name: Build and push container image
         if: ${{ github.ref_name == 'main' }}
         run: |
+          eval "$(nix print-dev-env)"
+
           set -x
 
           # Build image via Nix and take the resulting path as the local container registry
           local_cr="docker-archive://$(nix build .#${{ matrix.image }} --no-link --print-out-paths)"
 
+          # Get the version tag as set by dockerTools.buildImage
+          version_tag="$(skopeo list-tags "$local_cr" | jq -r '.Tags[0] | split(":")[1]')"
+
           # The container registry to push images to (GHCR)
           remote_cr="docker://ghcr.io/dannixon/${{ matrix.image }}"
           remote_cr_creds="${{ github.repository_owner }}:${{ github.token }}"
 
-          skopeo copy --dest-creds="$remote_cr_creds" "$local_cr" "$remote_cr"
+          # Push images
+          skopeo copy --dest-creds="$remote_cr_creds" "$local_cr" "$remote_cr:$version_tag"
           skopeo copy --dest-creds="$remote_cr_creds" "$local_cr" "$remote_cr:latest"
