@@ -21,7 +21,7 @@ jobs:
           - mmdvmhost
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: DeterminateSystems/nix-installer-action@v21
 
       - name: Build
